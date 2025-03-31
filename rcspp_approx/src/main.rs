@@ -10,8 +10,8 @@ struct Graph {
 
 struct Edge {
     to: usize,
-    cost: f64,
-    resources: Vec<f64>, // Vector de recursos consumidos
+    cost: i32,
+    resources: Vec<i32>,
 }
 
 // Estructura para representar un cromosoma
@@ -19,15 +19,15 @@ struct Edge {
 struct Chromosome {
     // Permutación de nodos intermedios (1 a n-2)
     genes: Vec<usize>,
-    fitness: f64,
+    fitness: i32,
 }
 
 // Estado para el algoritmo A*
 #[derive(Clone, PartialEq)]
 struct State {
     node: usize,
-    cost: f64,
-    resources: Vec<f64>,
+    cost: i32,
+    resources: Vec<i32>,
     priority: usize, // Basado en la permutación del cromosoma
 }
 
@@ -38,7 +38,7 @@ impl Ord for State {
     fn cmp(&self, other: &Self) -> Ordering {
         // Primero por prioridad, luego por costo
         other.priority.cmp(&self.priority)
-            .then_with(|| other.cost.partial_cmp(&self.cost).unwrap_or(Ordering::Equal))
+            .then_with(|| other.cost.cmp(&self.cost))
     }
 }
 
@@ -52,8 +52,8 @@ impl PartialOrd for State {
 fn decode_chromosome(
     graph: &Graph, 
     chromosome: &Chromosome, 
-    resource_limits: &[f64]
-) -> Option<(Vec<usize>, f64)> {
+    resource_limits: &[i32]
+) -> Option<(Vec<usize>, i32)> {
     // Creamos un mapa de prioridades basado en la permutación
     let mut priorities = HashMap::new();
     for (i, &node) in chromosome.genes.iter().enumerate() {
@@ -68,12 +68,12 @@ fn decode_chromosome(
     // Nodo inicial (0)
     queue.push(State {
         node: 0,
-        cost: 0.0,
-        resources: vec![0.0; resource_limits.len()],
+        cost: 0,
+        resources: vec![0; resource_limits.len()],
         priority: 0,
     });
     
-    cost_so_far.insert(0, 0.0);
+    cost_so_far.insert(0, 0);
     
     while let Some(current) = queue.pop() {
         // Si llegamos al destino (n-1)
@@ -131,7 +131,7 @@ fn decode_chromosome(
         }
     }
     
-    None // No encontramos un camino válido
+    None 
 }
 
 // Genera un cromosoma aleatorio (permutación de nodos intermedios)
@@ -141,7 +141,7 @@ fn generate_random_chromosome(num_nodes: usize, rng: &mut impl Rng) -> Chromosom
     
     Chromosome {
         genes,
-        fitness: 0.0,
+        fitness: 0,
     }
 }
 
@@ -181,7 +181,7 @@ fn crossover(parent1: &Chromosome, parent2: &Chromosome, rng: &mut impl Rng) -> 
     
     Chromosome {
         genes: child_genes,
-        fitness: 0.0,
+        fitness: 0,
     }
 }
 
@@ -201,7 +201,7 @@ fn genetic_algorithm(
     generations: usize,
     crossover_rate: f64,
     mutation_rate: f64,
-    resource_limits: &[f64]
+    resource_limits: &[i32]
 ) -> Option<Vec<usize>> {
     let mut rng = rand::rng();
     
@@ -213,15 +213,15 @@ fn genetic_algorithm(
     // Evaluamos fitness inicial
     for chromosome in &mut population {
         if let Some((_, cost)) = decode_chromosome(graph, chromosome, resource_limits) {
-            chromosome.fitness = 1.0 / cost; // Mayor fitness para menor costo
+            chromosome.fitness = 10000 / (cost + 1);
         } else {
-            chromosome.fitness = 0.0; // Solución inválida
+            chromosome.fitness = 0;
         }
     }
     
     for _ in 0..generations {
         // Ordenamos por fitness (descendente)
-        population.sort_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+        population.sort_by(|a, b| b.fitness.cmp(&a.fitness));
         
         // Aplicamos elitismo (conservamos los mejores)
         let elite_size = (population_size as f64 * 0.1) as usize;
@@ -249,9 +249,9 @@ fn genetic_algorithm(
             
             // Evaluamos fitness
             if let Some((_, cost)) = decode_chromosome(graph, &child, resource_limits) {
-                child.fitness = 1.0 / cost;
+                child.fitness = 10000 / (cost + 1);
             } else {
-                child.fitness = 0.0;
+                child.fitness = 0;
             }
             
             new_population.push(child);
@@ -261,7 +261,7 @@ fn genetic_algorithm(
     }
     
     // Ordenamos población final
-    population.sort_by(|a, b| b.fitness.partial_cmp(&a.fitness).unwrap());
+    population.sort_by(|a, b| b.fitness.cmp(&a.fitness));
     
     // Devolvemos el mejor camino
     decode_chromosome(graph, &population[0], resource_limits).map(|(path, _)| path)
@@ -294,13 +294,13 @@ fn main() {
     
     // Definimos las aristas (origen, destino, costo, recursos)
     let edges = vec![
-        (0, 1, 2.0, vec![1.0, 2.0]),
-        (0, 2, 3.0, vec![2.0, 1.0]),
-        (1, 2, 1.0, vec![1.0, 1.0]),
-        (1, 3, 4.0, vec![2.0, 3.0]),
-        (2, 3, 2.0, vec![1.0, 4.0]),
-        (2, 4, 5.0, vec![3.0, 1.0]),
-        (3, 4, 1.0, vec![1.0, 2.0]),
+        (0, 1, 2, vec![1, 2]),
+        (0, 2, 3, vec![2, 1]),
+        (1, 2, 1, vec![1, 1]),
+        (1, 3, 4, vec![2, 3]),
+        (2, 3, 2, vec![1, 4]),
+        (2, 4, 5, vec![3, 1]),
+        (3, 4, 1, vec![1, 2]),
     ];
     
     // Agregamos las aristas al grafo
@@ -313,7 +313,7 @@ fn main() {
     }
     
     // Definimos límites de recursos
-    let resource_limits = vec![5.0, 7.0];
+    let resource_limits = vec![5, 7];
     
     // Ejecutamos el algoritmo genético
     let result = genetic_algorithm(&graph, 50, 100, 0.8, 0.1, &resource_limits);
