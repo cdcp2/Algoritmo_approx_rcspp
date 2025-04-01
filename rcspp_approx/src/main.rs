@@ -53,7 +53,7 @@ fn decode_chromosome(
     graph: &Graph, 
     chromosome: &Chromosome, 
     resource_limits: &[i32]
-) -> Option<(Vec<usize>, i32)> {
+) -> Option<(Vec<usize>, i32, Vec<i32>)> {
     // Creamos un mapa de prioridades basado en la permutación
     let mut priorities = HashMap::new();
     for (i, &node) in chromosome.genes.iter().enumerate() {
@@ -88,7 +88,7 @@ fn decode_chromosome(
             }
             
             path.reverse();
-            return Some((path, current.cost));
+            return Some((path, current.cost, current.resources));
         }
         
         // Si ya visitamos este nodo con estos recursos o mejores, continuamos
@@ -202,7 +202,7 @@ fn genetic_algorithm(
     crossover_rate: f64,
     mutation_rate: f64,
     resource_limits: &[i32]
-) -> Option<Vec<usize>> {
+) -> Option<(Vec<usize>, i32, Vec<i32>)> {
     let mut rng = rand::rng();
     
     // Generamos población inicial
@@ -212,7 +212,7 @@ fn genetic_algorithm(
     
     // Evaluamos fitness inicial
     for chromosome in &mut population {
-        if let Some((_, cost)) = decode_chromosome(graph, chromosome, resource_limits) {
+        if let Some((_, cost, _)) = decode_chromosome(graph, chromosome, resource_limits) {
             chromosome.fitness = 10000 / (cost + 1);
         } else {
             chromosome.fitness = 0;
@@ -248,7 +248,7 @@ fn genetic_algorithm(
             mutate(&mut child, mutation_rate, &mut rng);
             
             // Evaluamos fitness
-            if let Some((_, cost)) = decode_chromosome(graph, &child, resource_limits) {
+            if let Some((_, cost, _)) = decode_chromosome(graph, &child, resource_limits) {
                 child.fitness = 10000 / (cost + 1);
             } else {
                 child.fitness = 0;
@@ -264,7 +264,7 @@ fn genetic_algorithm(
     population.sort_by(|a, b| b.fitness.cmp(&a.fitness));
     
     // Devolvemos el mejor camino
-    decode_chromosome(graph, &population[0], resource_limits).map(|(path, _)| path)
+    decode_chromosome(graph, &population[0], resource_limits)
 }
 
 // Selección por torneo
@@ -319,7 +319,7 @@ fn main() {
     let result = genetic_algorithm(&graph, 50, 100, 0.8, 0.1, &resource_limits);
     
     match result {
-        Some(path) => println!("Mejor camino encontrado: {:?}", path),
+        Some((path, cost,  consumption)) => println!("Mejor camino encontrado: {:?}, con costo: {:?} y consumo de: {:?}", path, cost, consumption),
         None => println!("No se encontró un camino válido con las restricciones dadas"),
     }
 }

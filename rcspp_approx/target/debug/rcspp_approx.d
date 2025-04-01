@@ -1,0 +1,1 @@
+C:\Users\cdcp2\Desktop\Analisis_de_AlgoritmosRUST\Algoritmo_genetico_rcspp\rcspp_approx\target\debug\rcspp_approx.exe: C:\Users\cdcp2\Desktop\Analisis_de_AlgoritmosRUST\Algoritmo_genetico_rcspp\rcspp_approx\src\main.rs
