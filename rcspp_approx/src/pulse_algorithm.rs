@@ -54,7 +54,9 @@ pub fn pulse_algorithm(graph: Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, re
 
     let mut primal_bound = u32::MAX;
     let minimum_consumption = get_bounds(&graph, e, |(_a, _b,c)| c);
+    //println!("Minimum consumption: {:?}", minimum_consumption);
     let minimum_cost = get_bounds(&graph, e, |(_a, b, _c)| b);
+    //println!("Minimum cost: {:?}", minimum_cost);
     let mut best_path = None;
     
     pulse(&graph, s, e, resource_limit, &mut primal_bound, &minimum_cost, &minimum_consumption, &mut labels, &mut curr, &mut best_path);
@@ -75,6 +77,7 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
 
     if !curr.check_dominance(&labels[*curr.path.last().unwrap()]) {
         labels[curr.last_node] = Some(curr.clone());
+        //println!("lables: {:?}", labels);
         if curr.check_bounds(*primal_bound, minimum_cost) && curr.check_feasibility(resource_limit, minimum_consumption) {
             for (u, c, t) in &graph[curr.last_node] {
                 if curr.visited[*u] {
@@ -83,7 +86,7 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
 
                 curr.add_edge((*u, *c, *t));
                 curr.visited[*u] = true;
-
+                curr.last_node = *u;
                 if curr.last_node == e  && curr.cost < *primal_bound{
                     *primal_bound = curr.cost;
                     *best_path = Some(curr.clone());
@@ -91,6 +94,7 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
                 pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
                 curr.visited[*u] = false;
                 curr.remove_edge((*u, *c, *t));
+                curr.last_node = *curr.path.last().unwrap();
             }
         }
     }

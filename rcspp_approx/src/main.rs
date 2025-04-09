@@ -100,7 +100,7 @@ fn main() {
         
         match result {
             Some(pulse) => {
-                println!("✅ Camino encontrado: {:?}", pulse.path);
+                println!(" Camino encontrado: {:?}", pulse.path);
                 println!("   Costo total: {}", pulse.cost);
                 println!("   Consumo de recursos: {}", pulse.consumption);
             },
