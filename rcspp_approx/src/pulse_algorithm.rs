@@ -16,16 +16,19 @@ impl Pulse {
 
     fn add_edge(&mut self, edge: (usize, u32, u32)) {
         self.path.push(edge.0);
+        self.visited[edge.0] = true;
+        self.last_node = edge.0;
         self.cost += edge.1;
         self.consumption += edge.2;
     }
 
     fn remove_edge(&mut self, edge: (usize, u32, u32)) {
-        if let Some(pos) = self.path.iter().position(|&x| x == edge.0) {
-            self.path.remove(pos);
-            self.cost -= edge.1;
-            self.consumption -= edge.2;
-        }
+        self.path.pop();
+        self.visited[edge.0] = false;
+        self.last_node = *self.path.last().unwrap();
+        self.cost -= edge.1;
+        self.consumption -= edge.2;
+        
     }
 
     // reglas de dominancia
@@ -42,6 +45,13 @@ impl Pulse {
 
     fn check_feasibility(&self, resource_limit: u32, minimum_consumption: &Vec<u32>) -> bool {
         self.consumption + minimum_consumption[self.last_node] <= resource_limit
+    }
+
+    fn check_strong_dominance(&self, other: &Option<Self>) -> bool {
+        match other {
+            Some(other) => self.cost < other.cost && self.consumption < other.consumption,
+            None => false,
+        }
     }
 }
 
@@ -77,33 +87,32 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
             best_path: &mut Option<Pulse>) {
     
     // uses backtracking with prunning strategies to find the best path
-    if !curr.check_dominance(&labels[*curr.path.last().unwrap()]) {
-        labels[curr.last_node] = Some(curr.clone());
+    if !curr.check_dominance(&labels[curr.last_node]) && curr.check_bounds(*primal_bound, minimum_cost) && curr.check_feasibility(resource_limit, minimum_consumption) {
         //println!("lables: {:?}", labels);
-        if curr.check_bounds(*primal_bound, minimum_cost) && curr.check_feasibility(resource_limit, minimum_consumption) {
-            for (u, c, t) in &graph[curr.last_node] {
-                if curr.visited[*u] {
-                    continue;
-                }
-
-                curr.add_edge((*u, *c, *t));
-                curr.visited[*u] = true;
-                curr.last_node = *u;
-
-                //if we get to the end, it updates the primal bound and the best path
-                if curr.last_node == e  && curr.cost < *primal_bound{
-                    *primal_bound = curr.cost;
-                    *best_path = Some(curr.clone());
-                } 
-                pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
-                curr.visited[*u] = false;
-                curr.remove_edge((*u, *c, *t));
-                curr.last_node = *curr.path.last().unwrap();
+        if curr.check_strong_dominance(&labels[curr.last_node]) {
+            labels[curr.last_node] = Some(curr.clone());
+        }
+        for (u, c, t) in &graph[curr.last_node] {
+            if curr.visited[*u] {
+                continue;
             }
+
+            curr.add_edge((*u, *c, *t));
+            
+            //if we get to the end, it updates the primal bound and the best path
+            if curr.last_node == e  && curr.cost < *primal_bound{
+                *primal_bound = curr.cost;
+                *best_path = Some(curr.clone());
+            } 
+            pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
+            
+            curr.remove_edge((*u, *c, *t));
+            
         }
     }
-    
 }
+    
+
 
 fn get_bounds(graph: &Vec<Vec<(usize, u32, u32)>>, s: usize, cost: fn((usize, u32,u32))->u32)-> Vec<u32> {
     // Reverse graph for Dijkstra's algorithm so we can find the minimum cost to each node from the target node
