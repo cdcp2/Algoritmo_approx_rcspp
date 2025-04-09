@@ -1,5 +1,5 @@
 use crate::genetic_rcsp::Edge;
-use std::{collections::HashMap, cmp::Ordering};
+use std::collections::HashMap;
 
 use genetic_rcsp::genetic_algorithm;
 
@@ -45,7 +45,70 @@ fn main() {
         None => println!("No se encontró un camino válido con las restricciones dadas"),
     }
 
+    println!("\n--- PRUEBA ALGORITMO PULSE ---");
     
+    // Crear un grafo de ejemplo con 6 nodos
+    // Representación: Vec<Vec<(nodo_destino, costo, consumo_recurso)>>
+    let graph: Vec<Vec<(usize, u32, u32)>> = vec![
+        // Nodo 0 (origen)
+        vec![(1, 2, 3), (2, 3, 1)],
+        
+        // Nodo 1
+        vec![(3, 4, 2), (4, 1, 5)],
+        
+        // Nodo 2
+        vec![(3, 1, 3), (4, 5, 2)],
+        
+        // Nodo 3
+        vec![(5, 3, 2)],
+        
+        // Nodo 4
+        vec![(5, 2, 1)],
+        
+        // Nodo 5 (destino)
+        vec![]
+    ];
+    
+    // Parámetros del problema
+    let source = 0;
+    let target = 5;
+    
+    // Visualizar el grafo
+    println!("Grafo de prueba:");
+    for (i, edges) in graph.iter().enumerate() {
+        print!("Nodo {}: ", i);
+        for (dest, cost, resource) in edges {
+            print!("→ {}(c:{},r:{}) ", dest, cost, resource);
+        }
+        println!();
+    }
+    
+    // Caminos posibles en este grafo:
+    println!("\nCaminos posibles (origen → destino):");
+    println!("0 → 1 → 3 → 5: Costo total = 9, Consumo total = 7");
+    println!("0 → 1 → 4 → 5: Costo total = 5, Consumo total = 9");
+    println!("0 → 2 → 3 → 5: Costo total = 7, Consumo total = 6");
+    println!("0 → 2 → 4 → 5: Costo total = 10, Consumo total = 4");
+    
+    // Probar con diferentes límites de recursos
+    let resource_limits = vec![4, 6, 8, 10];
+    
+    for &limit in &resource_limits {
+        println!("\nPrueba con límite de recursos = {}", limit);
+        
+        let result = pulse_algorithm::pulse_algorithm(graph.clone(), source, target, limit);
+        
+        match result {
+            Some(pulse) => {
+                println!("✅ Camino encontrado: {:?}", pulse.path);
+                println!("   Costo total: {}", pulse.cost);
+                println!("   Consumo de recursos: {}", pulse.consumption);
+            },
+            None => {
+                println!(" No se encontró un camino válido con el límite de recursos dado");
+            }
+        }
+    }
 
     
 }

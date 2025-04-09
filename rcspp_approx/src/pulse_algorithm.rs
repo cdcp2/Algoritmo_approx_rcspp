@@ -1,15 +1,17 @@
 use std::{cmp::Reverse, collections::BinaryHeap};
 
 #[derive(Debug, Clone)]
-struct Pulse {
-    path: Vec<usize>,
-    cost: u32,
-    consumption: u32,
+pub struct Pulse {
+    pub path: Vec<usize>,
+    pub cost: u32,
+    pub consumption: u32,
+    pub last_node: usize,
+    pub visited: Vec<bool>,
 }
 
 impl Pulse {
-    fn new(path: Vec<usize>, cost: u32, consumption: u32) -> Self {
-        Pulse {path, cost, consumption }
+    fn new(path: Vec<usize>, cost: u32, consumption: u32, last_node: usize, visited: Vec<bool>) -> Self {
+        Pulse {path, cost, consumption, last_node, visited}
     }
 
     fn add_edge(&mut self, edge: (usize, u32, u32)) {
@@ -33,25 +35,31 @@ impl Pulse {
         }
     }
 
-    fn check_bounds(&self, primal_bound: u32, minimum_cost: Vec<u32>) -> bool {
-        self.cost + minimum_cost[*self.path.last().unwrap()] <= primal_bound
+    fn check_bounds(&self, primal_bound: u32, minimum_cost: &Vec<u32>) -> bool {
+        self.cost + minimum_cost[self.last_node] <= primal_bound
     }
 
-    fn check_feasibility(&self, resource_limit: u32, minimum_consumption: Vec<u32>) -> bool {
-        self.consumption + minimum_consumption[*self.path.last().unwrap()] <= resource_limit
+    fn check_feasibility(&self, resource_limit: u32, minimum_consumption: &Vec<u32>) -> bool {
+        self.consumption + minimum_consumption[self.last_node] <= resource_limit
     }
 }
 
 
-pub fn pulse_algorithm(graph: Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, resource_limit: u32)-> Option<(Vec<usize>, u32, u32)> {
+pub fn pulse_algorithm(graph: Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, resource_limit: u32)-> Option<Pulse> {
     //every edge is (node, cost, consumption)
-    let mut best_path = Pulse::new(vec![s], 0, 0);
+    let mut visited = vec![false; graph.len()];
+    visited[s] = true;
+    let mut curr = Pulse::new(vec![s], 0, 0, s, visited);
     let mut labels: Vec<Option<Pulse>> = vec![None; graph.len()];
 
     let mut primal_bound = u32::MAX;
     let minimum_consumption = get_bounds(&graph, e, |(_a, _b,c)| c);
     let minimum_cost = get_bounds(&graph, e, |(_a, b, _c)| b);
-    None
+    let mut best_path = None;
+    
+    pulse(&graph, s, e, resource_limit, &mut primal_bound, &minimum_cost, &minimum_consumption, &mut labels, &mut curr, &mut best_path);
+
+    best_path
 }
 
 fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>, 
@@ -62,10 +70,29 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
             minimum_cost: &Vec<u32>, 
             minimum_consumption: &Vec<u32>, 
             labels: &mut Vec<Option<Pulse>>,
-            best_path: &mut Pulse){
+            curr: &mut Pulse,
+            best_path: &mut Option<Pulse>) {
 
-    if !best_path.check_dominance(&labels[*best_path.path.last().unwrap()]) {
-        return;
+    if !curr.check_dominance(&labels[*curr.path.last().unwrap()]) {
+        labels[curr.last_node] = Some(curr.clone());
+        if curr.check_bounds(*primal_bound, minimum_cost) && curr.check_feasibility(resource_limit, minimum_consumption) {
+            for (u, c, t) in &graph[curr.last_node] {
+                if curr.visited[*u] {
+                    continue;
+                }
+
+                curr.add_edge((*u, *c, *t));
+                curr.visited[*u] = true;
+
+                if curr.last_node == e  && curr.cost < *primal_bound{
+                    *primal_bound = curr.cost;
+                    *best_path = Some(curr.clone());
+                } 
+                pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
+                curr.visited[*u] = false;
+                curr.remove_edge((*u, *c, *t));
+            }
+        }
     }
     
 }
