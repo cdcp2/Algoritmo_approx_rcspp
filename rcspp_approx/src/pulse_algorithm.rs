@@ -40,7 +40,10 @@ impl Pulse {
     }
 
     fn check_bounds(&self, primal_bound: u32, minimum_cost: &Vec<u32>) -> bool {
-        self.cost + minimum_cost[self.last_node] <= primal_bound
+        println!("Cost: {}, Consumption: {}", self.cost, self.consumption);
+        println!("Minimum cost: {}", minimum_cost[self.last_node]);
+        println!("Primal bound: {}", primal_bound);
+        minimum_cost[self.last_node] < primal_bound && self.cost + minimum_cost[self.last_node] <= primal_bound
     }
 
     fn check_feasibility(&self, resource_limit: u32, minimum_consumption: &Vec<u32>) -> bool {
@@ -65,9 +68,9 @@ pub fn pulse_algorithm(graph: Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, re
 
     let mut primal_bound = u32::MAX;
     let minimum_consumption = get_bounds(&graph, e, |(_a, _b,c)| c);
-    //println!("Minimum consumption: {:?}", minimum_consumption);
+    println!("Minimum consumption: {:?}", minimum_consumption);
     let minimum_cost = get_bounds(&graph, e, |(_a, b, _c)| b);
-    //println!("Minimum cost: {:?}", minimum_cost);
+    println!("Minimum cost: {:?}", minimum_cost);
     let mut best_path = None;
     
     pulse(&graph, s, e, resource_limit, &mut primal_bound, &minimum_cost, &minimum_consumption, &mut labels, &mut curr, &mut best_path);
@@ -103,8 +106,10 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
             if curr.last_node == e  && curr.cost < *primal_bound{
                 *primal_bound = curr.cost;
                 *best_path = Some(curr.clone());
-            } 
-            pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
+            } else {
+                //if we are not at the end, we call the function recursively
+                pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
+            }
             
             curr.remove_edge((*u, *c, *t));
             
@@ -116,8 +121,8 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
 
 fn get_bounds(graph: &Vec<Vec<(usize, u32, u32)>>, s: usize, cost: fn((usize, u32,u32))->u32)-> Vec<u32> {
     // Reverse graph for Dijkstra's algorithm so we can find the minimum cost to each node from the target node
-    // so we also get the minimum cost from the every node to the target node
-    // it with the function cost, it also give us a way to get the minimum consumption without reapeating code
+    // so we also get the minimum cost from every node to the target node
+    // with the function cost, it also give us a way to get the minimum consumption without reapeating code
     let graph_rev = graph.iter().enumerate().fold(vec![Vec::new(); graph.len()],
      |mut acc: Vec<Vec<(usize, u32)>>, (i, adj)| {
         adj.iter().for_each(|&edge| {
