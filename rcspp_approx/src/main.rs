@@ -70,8 +70,8 @@ fn main() {
     ];
     
     // Parámetros del problema
-    let source = 5;
-    let target = 4;
+    let source = 0;
+    let target = 5;
     
     // Visualizar el grafo
     println!("Grafo de prueba:");

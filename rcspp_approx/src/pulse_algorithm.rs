@@ -31,8 +31,8 @@ impl Pulse {
         
     }
 
-    // reglas de dominancia
-    fn check_dominance(&self, other: &Option<Self>) -> bool {
+    // reglas de poda
+    fn is_dominated(&self, other: &Option<Self>) -> bool {
         match other {
             Some(other) => self.cost >= other.cost && self.consumption >= other.consumption,
             None => false,
@@ -40,20 +40,18 @@ impl Pulse {
     }
 
     fn check_bounds(&self, primal_bound: u32, minimum_cost: &Vec<u32>) -> bool {
-        println!("Cost: {}, Consumption: {}", self.cost, self.consumption);
-        println!("Minimum cost: {}", minimum_cost[self.last_node]);
-        println!("Primal bound: {}", primal_bound);
         minimum_cost[self.last_node] < primal_bound && self.cost + minimum_cost[self.last_node] <= primal_bound
     }
 
     fn check_feasibility(&self, resource_limit: u32, minimum_consumption: &Vec<u32>) -> bool {
-        self.consumption + minimum_consumption[self.last_node] <= resource_limit
+        minimum_consumption[self.last_node] <= resource_limit && self.consumption + minimum_consumption[self.last_node] <= resource_limit
     }
 
+    // para actualizar los lables, esta es una manera, la otra es tener multiples labels por nodo
     fn check_strong_dominance(&self, other: &Option<Self>) -> bool {
         match other {
             Some(other) => self.cost < other.cost && self.consumption < other.consumption,
-            None => false,
+            None => true,
         }
     }
 }
@@ -90,11 +88,13 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
             best_path: &mut Option<Pulse>) {
     
     // uses backtracking with prunning strategies to find the best path
-    if !curr.check_dominance(&labels[curr.last_node]) && curr.check_bounds(*primal_bound, minimum_cost) && curr.check_feasibility(resource_limit, minimum_consumption) {
+    if !curr.is_dominated(&labels[curr.last_node]) && curr.check_bounds(*primal_bound, minimum_cost) && curr.check_feasibility(resource_limit, minimum_consumption) {
         //println!("lables: {:?}", labels);
         if curr.check_strong_dominance(&labels[curr.last_node]) {
             labels[curr.last_node] = Some(curr.clone());
         }
+        //println!("curr: {:?}", curr);
+        //println!("labels: {:?}", labels);
         for (u, c, t) in &graph[curr.last_node] {
             if curr.visited[*u] {
                 continue;
