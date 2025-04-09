@@ -28,6 +28,7 @@ impl Pulse {
         }
     }
 
+    // reglas de dominancia
     fn check_dominance(&self, other: &Option<Self>) -> bool {
         match other {
             Some(other) => self.cost >= other.cost && self.consumption >= other.consumption,
@@ -74,7 +75,8 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
             labels: &mut Vec<Option<Pulse>>,
             curr: &mut Pulse,
             best_path: &mut Option<Pulse>) {
-
+    
+    // uses backtracking with prunning strategies to find the best path
     if !curr.check_dominance(&labels[*curr.path.last().unwrap()]) {
         labels[curr.last_node] = Some(curr.clone());
         //println!("lables: {:?}", labels);
@@ -87,6 +89,8 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
                 curr.add_edge((*u, *c, *t));
                 curr.visited[*u] = true;
                 curr.last_node = *u;
+
+                //if we get to the end, it updates the primal bound and the best path
                 if curr.last_node == e  && curr.cost < *primal_bound{
                     *primal_bound = curr.cost;
                     *best_path = Some(curr.clone());
@@ -102,6 +106,9 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
 }
 
 fn get_bounds(graph: &Vec<Vec<(usize, u32, u32)>>, s: usize, cost: fn((usize, u32,u32))->u32)-> Vec<u32> {
+    // Reverse graph for Dijkstra's algorithm so we can find the minimum cost to each node from the target node
+    // so we also get the minimum cost from the every node to the target node
+    // it with the function cost, it also give us a way to get the minimum consumption without reapeating code
     let graph_rev = graph.iter().enumerate().fold(vec![Vec::new(); graph.len()],
      |mut acc: Vec<Vec<(usize, u32)>>, (i, adj)| {
         adj.iter().for_each(|&edge| {
