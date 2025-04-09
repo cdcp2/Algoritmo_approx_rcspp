@@ -1,16 +1,15 @@
 use crate::genetic_rcsp::Edge;
-use std::collections::HashMap;
+use std::{collections::HashMap, cmp::Ordering};
 
-use genetic_rcsp::{genetic_algorithm, Graph};
+use genetic_rcsp::genetic_algorithm;
 
 mod bidirectional_pulse;
 mod genetic_rcsp;
-
-
+mod pulse_algorithm;
 
 fn main() {
     // Ejemplo de un grafo con 5 nodos (0 a 4)
-    let mut graph = Graph {
+    let mut graph = genetic_rcsp::Graph {
         num_nodes: 5,
         edges: HashMap::new(),
     };
@@ -45,4 +44,8 @@ fn main() {
         Some((path, cost, consumption)) => println!("Mejor camino encontrado: {:?}, con costo: {:?}, y consumo de: {:?}", path, cost, consumption),
         None => println!("No se encontró un camino válido con las restricciones dadas"),
     }
+
+    
+
+    
 }
