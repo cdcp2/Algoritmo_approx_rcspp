@@ -6,6 +6,7 @@ use genetic_rcsp::genetic_algorithm;
 mod bidirectional_pulse;
 mod genetic_rcsp;
 mod pulse_algorithm;
+mod mult_obj_approach;
 
 fn main() {
     // Ejemplo de un grafo con 5 nodos (0 a 4)
@@ -110,5 +111,57 @@ fn main() {
         }
     }
 
+    test_mult_obj_algorithm();
+
     
+}
+
+fn test_mult_obj_algorithm() {
+    println!("\n--- PRUEBA ALGORITMO MULTI-OBJETIVO ---");
+    
+    // Usar el mismo grafo de prueba que usaste para pulse_algorithm
+    let graph: Vec<Vec<(usize, u32, u32)>> = vec![
+        // Nodo 0 (origen)
+        vec![(1, 2, 3), (2, 3, 1)],
+        
+        // Nodo 1
+        vec![(3, 4, 2), (4, 1, 5)],
+        
+        // Nodo 2
+        vec![(3, 1, 3), (4, 5, 2)],
+        
+        // Nodo 3
+        vec![(5, 3, 2)],
+        
+        // Nodo 4
+        vec![(5, 2, 1)],
+        
+        // Nodo 5 (destino)
+        vec![]
+    ];
+    
+    // Parámetros del problema
+    let source = 0;
+    let target = 5;
+    
+    // Probar con diferentes límites de recursos
+    let resource_limits = vec![2, 4, 6, 8, 10];
+    
+    for &limit in &resource_limits {
+        println!("\nPrueba con límite de recursos = {}", limit);
+        
+        // Ejecutamos el algoritmo multi-objetivo con un incremento de 0.1 para lambda
+        let result = mult_obj_approach::mult_obj(&graph, source, target, limit, 0.1);
+        
+        match result {
+            Some((path, cost, resource)) => {
+                println!("✅ Camino encontrado: {:?}", path);
+                println!("   Costo total: {}", cost);
+                println!("   Consumo de recursos: {}", resource);
+            },
+            None => {
+                println!("❌ No se encontró un camino válido con el límite de recursos dado");
+            }
+        }
+    }
 }
