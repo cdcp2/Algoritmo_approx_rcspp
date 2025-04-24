@@ -8,112 +8,80 @@ mod genetic_rcsp;
 mod pulse_algorithm;
 mod mult_obj_approach;
 
-fn main() {
-    // Ejemplo de un grafo con 5 nodos (0 a 4)
-    let mut graph = genetic_rcsp::Graph {
-        num_nodes: 5,
-        edges: HashMap::new(),
-    };
-    
-    // Definimos las aristas (origen, destino, costo, recursos)
-    let edges = vec![
-        (0, 1, 2, vec![1, 2]),
-        (0, 2, 3, vec![2, 1]),
-        (1, 2, 1, vec![7, 1]),
-        (1, 3, 4, vec![2, 3]),
-        (2, 3, 2, vec![5, 6]),
-        (2, 4, 5, vec![3, 1]),
-        (3, 4, 1, vec![1, 2]),
-    ];
-    
-    // Agregamos las aristas al grafo
-    for (from, to, cost, resources) in edges {
-        graph.edges.entry(from).or_insert_with(Vec::new).push(Edge {
-            to,
-            cost,
-            resources,
-        });
-    }
-    
-    // Definimos límites de recursos
-    let resource_limits = vec![5, 7];
-    
-    // Ejecutamos el algoritmo genético
-    let result = genetic_algorithm(&graph, 50, 100, 0.8, 0.1, &resource_limits);
-    
-    match result {
-        Some((path, cost, consumption)) => println!("Mejor camino encontrado: {:?}, con costo: {:?}, y consumo de: {:?}", path, cost, consumption),
-        None => println!("No se encontró un camino válido con las restricciones dadas"),
+use std::{
+    env,
+    fs::File,
+    io::{self, BufRead},
+};
+
+fn main() -> io::Result<()> {
+    // ── 1. Argumentos de línea de comandos ───────────────────────────────
+    //    cargo run -- <archivo> <origen> <destino> <recurso_max>
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 5 {
+        eprintln!(
+            "Uso: {} <archivo_entrada> <nodo_origen> <nodo_destino> <límite_recursos>",
+            args[0]
+        );
+        std::process::exit(1);
     }
 
-    println!("\n--- PRUEBA ALGORITMO PULSE ---");
-    
-    // Crear un grafo de ejemplo con 6 nodos
-    // Representación: Vec<Vec<(nodo_destino, costo, consumo_recurso)>>
-    let graph: Vec<Vec<(usize, u32, u32)>> = vec![
-        // Nodo 0 (origen)
-        vec![(1, 2, 3), (2, 3, 1)],
-        
-        // Nodo 1
-        vec![(3, 4, 2), (4, 1, 5)],
-        
-        // Nodo 2
-        vec![(3, 1, 3), (4, 5, 2)],
-        
-        // Nodo 3
-        vec![(5, 3, 2)],
-        
-        // Nodo 4
-        vec![(5, 2, 1)],
-        
-        // Nodo 5 (destino)
-        vec![]
-    ];
-    
-    // Parámetros del problema
-    let source = 0;
-    let target = 5;
-    
-    // Visualizar el grafo
-    println!("Grafo de prueba:");
-    for (i, edges) in graph.iter().enumerate() {
-        print!("Nodo {}: ", i);
-        for (dest, cost, resource) in edges {
-            print!("→ {}(c:{},r:{}) ", dest, cost, resource);
+    let filename = &args[1];
+    let s: usize = args[2].parse().expect("Nodo origen inválido");
+    let e: usize = args[3].parse().expect("Nodo destino inválido");
+    let resource_limit: u32 = args[4].parse().expect("Límite de recursos inválido");
+
+    // ── 2. Leer todas las aristas y detectar el número de nodos ───────────
+    let file = File::open(filename)?;
+    let reader = io::BufReader::new(file);
+
+    //  (u, v, costo, consumo)
+    let mut edges: Vec<(usize, usize, u32, u32)> = Vec::new();
+    let mut max_node = 0;
+
+    for line in reader.lines() {
+        let line = line?;
+        if line.trim().is_empty() {
+            continue;
         }
-        println!();
-    }
-    
-    // Caminos posibles en este grafo:
-    println!("\nCaminos posibles (origen → destino):");
-    println!("0 → 1 → 3 → 5: Costo total = 9, Consumo total = 7");
-    println!("0 → 1 → 4 → 5: Costo total = 5, Consumo total = 9");
-    println!("0 → 2 → 3 → 5: Costo total = 7, Consumo total = 6");
-    println!("0 → 2 → 4 → 5: Costo total = 10, Consumo total = 4");
-    
-    // Probar con diferentes límites de recursos
-    let resource_limits = vec![4, 6, 8, 10];
-    
-    for &limit in &resource_limits {
-        println!("\nPrueba con límite de recursos = {}", limit);
-        
-        let result = pulse_algorithm::pulse_algorithm(graph.clone(), source, target, limit);
-        
-        match result {
-            Some(pulse) => {
-                println!(" Camino encontrado: {:?}", pulse.path);
-                println!("   Costo total: {}", pulse.cost);
-                println!("   Consumo de recursos: {}", pulse.consumption);
-            },
-            None => {
-                println!(" No se encontró un camino válido con el límite de recursos dado");
-            }
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() != 4 {
+            eprintln!("Línea malformada, se omite: {}", line);
+            continue;
         }
+        let u: usize = parts[0].parse().expect("Índice de nodo inválido");
+        let v: usize = parts[1].parse().expect("Índice de nodo inválido");
+        let cost: u32 = parts[2].parse().expect("Costo inválido");
+        let cons: u32 = parts[3].parse().expect("Consumo inválido");
+
+        edges.push((u, v, cost, cons));
+        max_node = max_node.max(u).max(v);
     }
 
-    test_mult_obj_algorithm();
+    // ── 3. Construir la lista de adyacencia ───────────────────────────────
+    let mut graph: Vec<Vec<(usize, u32, u32)>> = vec![Vec::new(); max_node + 1];
+    for (u, v, cost, cons) in edges {
+        graph[u].push((v, cost, cons)); // Arista dirigida u → v
+    }
 
-    
+    if s >= graph.len() || e >= graph.len() {
+        eprintln!(
+            "El nodo origen o destino está fuera de rango (0..{}).",
+            graph.len() - 1
+        );
+        std::process::exit(1);
+    }
+
+    // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
+    match pulse_algorithm::pulse_algorithm(graph, s, e, resource_limit) {
+        Some(best) => println!(
+            "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
+            best.path, best.cost, best.consumption
+        ),
+        None => println!("No existe un camino factible con el límite de recursos dado."),
+    }
+
+    Ok(())
 }
 
 fn test_mult_obj_algorithm() {

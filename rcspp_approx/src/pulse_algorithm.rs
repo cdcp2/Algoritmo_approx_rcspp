@@ -66,17 +66,17 @@ pub fn pulse_algorithm(graph: Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, re
 
     let mut primal_bound = u32::MAX;
     let minimum_consumption = get_bounds(&graph, e, |(_a, _b,c)| c);
-    println!("Minimum consumption: {:?}", minimum_consumption);
+    //println!("Minimum consumption: {:?}", minimum_consumption);
     let minimum_cost = get_bounds(&graph, e, |(_a, b, _c)| b);
-    println!("Minimum cost: {:?}", minimum_cost);
+    //println!("Minimum cost: {:?}", minimum_cost);
     let mut best_path = None;
     
-    pulse(&graph, s, e, resource_limit, &mut primal_bound, &minimum_cost, &minimum_consumption, &mut labels, &mut curr, &mut best_path);
+    expand_pulse(&graph, s, e, resource_limit, &mut primal_bound, &minimum_cost, &minimum_consumption, &mut labels, &mut curr, &mut best_path);
 
     best_path
 }
 
-fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>, 
+fn expand_pulse(graph: &Vec<Vec<(usize, u32, u32)>>, 
             s: usize, 
             e: usize, 
             resource_limit: u32, 
@@ -108,7 +108,7 @@ fn pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
                 *best_path = Some(curr.clone());
             } else {
                 //if we are not at the end, we call the function recursively
-                pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
+                expand_pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
             }
             
             curr.remove_edge((*u, *c, *t));

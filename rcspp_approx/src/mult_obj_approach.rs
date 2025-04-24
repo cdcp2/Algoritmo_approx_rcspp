@@ -32,7 +32,7 @@ pub fn mult_obj(graph: &Vec<Vec<(usize, u32, u32)>>, s: usize, e: usize, resourc
     // Vamos incrementando lambda desde 0 hasta 1
     while lambda <= 1.0 {
         // Definimos una función de costo que combina costo y recurso usando lambda
-        let fn_cost = move |(cost, resource): (u32, u32)| -> f64 {
+        let fn_cost = move |cost: u32, resource: u32| -> f64 {
             lambda * (cost as f64) + (1.0 - lambda) * (resource as f64)
         };
 
@@ -58,7 +58,7 @@ fn dijkstra_with_tracking(
     graph: &Vec<Vec<(usize, u32, u32)>>, 
     s: usize, 
     e: usize, 
-    fn_cost: impl Fn((u32, u32)) -> f64
+    fn_cost: impl Fn(u32, u32) -> f64
 ) -> Option<(Vec<usize>, u32, u32)> {
     // Cola de prioridad para Dijkstra
     let mut heap: BinaryHeap<Reverse<(F64, usize, u32, u32)>> = BinaryHeap::new();
@@ -97,7 +97,7 @@ fn dijkstra_with_tracking(
             let next_resource = resource + edge_resource;
             
             // Calculamos el costo combinado
-            let next_f_cost = fn_cost((next_cost, next_resource));
+            let next_f_cost = fn_cost(next_cost, next_resource);
 
             // Si encontramos un mejor camino (según la función de costo)
             if next_f_cost < dist[next_node] {
