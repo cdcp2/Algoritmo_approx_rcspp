@@ -44,7 +44,7 @@ fn dijkstra<F>(graph: &Vec<Vec<(usize,u32,u32,bool)>>, s:usize, e:usize, fn_cost
                 
                 parent[next_node] = Some(node);
                 
-                heap.push(Reverse((next_cost, next_node, next_cost, next_resource)));
+                heap.push(Reverse((next_f_cost, next_node, next_cost, next_resource)));
             }
         }
     }
@@ -62,7 +62,7 @@ pub fn disjoint_algo(graph: &Vec<Vec<(usize, u32, u32)>>, s:usize, e:usize, reso
             .collect()
     })
     .collect();
-    let mut best: Option<(Vec<usize>, u32, u32)> =None;
+    let mut best: Option<(Vec<usize>, u32, u32)> = None;
 
     for cost in 1..=2 {
         let fn_cost = move |c1:u32, c2:u32|->u32{if cost == 1 {c1}else{c2}};
