@@ -57,7 +57,7 @@ impl Pulse {
 }
 
 
-pub fn pulse_algorithm(graph: Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, resource_limit: u32)-> Option<Pulse> {
+pub fn pulse_algorithm(graph: &Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, resource_limit: u32)-> Option<Pulse> {
     //every edge is (node, cost, consumption)
     let mut visited = vec![false; graph.len()];
     visited[s] = true;

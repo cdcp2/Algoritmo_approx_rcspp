@@ -1,18 +1,17 @@
-use crate::genetic_rcsp::Edge;
-use std::collections::HashMap;
 
-use genetic_rcsp::genetic_algorithm;
 
 mod bidirectional_pulse;
 mod genetic_rcsp;
 mod pulse_algorithm;
 mod mult_obj_approach;
+mod disjoint_path_approach;
 
 use std::{
     env,
     fs::File,
-    io::{self, BufRead},
+    io::{self, BufRead}, time::Instant,
 };
+
 
 fn main() -> io::Result<()> {
     // ── 1. Argumentos de línea de comandos ───────────────────────────────
@@ -45,10 +44,7 @@ fn main() -> io::Result<()> {
             continue;
         }
         let parts: Vec<&str> = line.split_whitespace().collect();
-        if parts.len() != 4 {
-            eprintln!("Línea malformada, se omite: {}", line);
-            continue;
-        }
+        
         let u: usize = parts[0].parse().expect("Índice de nodo inválido");
         let v: usize = parts[1].parse().expect("Índice de nodo inválido");
         let cost: u32 = parts[2].parse().expect("Costo inválido");
@@ -71,15 +67,41 @@ fn main() -> io::Result<()> {
         );
         std::process::exit(1);
     }
-
+    let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
-    match pulse_algorithm::pulse_algorithm(graph, s, e, resource_limit) {
+    match pulse_algorithm::pulse_algorithm(&graph, s, e, resource_limit) {
         Some(best) => println!(
             "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
             best.path, best.cost, best.consumption
         ),
         None => println!("No existe un camino factible con el límite de recursos dado."),
     }
+    let duration = start.elapsed();
+    println!("Duration: {:?}",duration);
+
+    let start = Instant::now();
+    // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
+    match mult_obj_approach::mult_obj(&graph, s, e, resource_limit, 0.1) {
+        Some(best) => println!(
+            "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
+            best.0, best.1, best.2
+        ),
+        None => println!("No existe un camino factible con el límite de recursos dado."),
+    }
+    let duration = start.elapsed();
+    println!("Duration: {:?}",duration);
+
+    let start = Instant::now();
+    // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
+    match disjoint_path_approach::disjoint_algo(&graph, s, e, resource_limit){
+        Some(best) => println!(
+            "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
+            best.0, best.1, best.2
+        ),
+        None => println!("No existe un camino factible con el límite de recursos dado."),
+    }
+    let duration = start.elapsed();
+    println!("Duration: {:?}",duration);
 
     Ok(())
 }
