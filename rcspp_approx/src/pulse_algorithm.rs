@@ -32,11 +32,17 @@ impl Pulse {
     }
 
     // reglas de poda
-    fn is_dominated(&self, other: &Option<Self>) -> bool {
-        match other {
-            Some(other) => self.cost >= other.cost && self.consumption >= other.consumption,
-            None => false,
+    fn is_dominated(&self, other: & [Option<(u32,u32)>; 3]) -> bool {
+        let mut is_dom: u8 = 0;
+
+        for i in 0..3 {
+            match other[i] {
+                Some((cost, consumption)) => if self.consumption >= consumption && self.cost >= cost {is_dom+=1},
+                None => ()
+            } 
         }
+
+        is_dom > 2
     }
 
     fn check_bounds(&self, primal_bound: u32, minimum_cost: &Vec<u32>) -> bool {
@@ -48,10 +54,24 @@ impl Pulse {
     }
 
     // para actualizar los lables, esta es una manera, la otra es tener multiples labels por nodo
-    fn check_strong_dominance(&self, other: &Option<Self>) -> bool {
+    fn replace_first(&self, other: Option<(u32,u32)>) -> bool {
         match other {
-            Some(other) => self.cost < other.cost && self.consumption < other.consumption,
-            None => true,
+            Some((cost, _consumption)) => self.cost < cost,
+            None => true
+        }
+    }
+
+    fn replace_second(&self, other: Option<(u32,u32)>) -> bool {
+        match other {
+            Some((_cost, consumption)) => self.consumption < consumption,
+            None => true
+        }
+    }
+
+    fn replace_third(&self, other: Option<(u32,u32)>) -> bool {
+        match other {
+            Some((_cost, _consumption)) => rand::random_bool(0.8),
+            None => true
         }
     }
 }
@@ -62,7 +82,7 @@ pub fn pulse_algorithm(graph: &Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, r
     let mut visited = vec![false; graph.len()];
     visited[s] = true;
     let mut curr = Pulse::new(vec![s], 0, 0, s, visited);
-    let mut labels: Vec<Option<Pulse>> = vec![None; graph.len()];
+    let mut labels: Vec<[Option<(u32, u32)>; 3]> = vec![[None,None,None]; graph.len()];
 
     let mut primal_bound = u32::MAX;
     let minimum_consumption = get_bounds(&graph, e, |(_a, _b,c)| c);
@@ -76,6 +96,7 @@ pub fn pulse_algorithm(graph: &Vec<Vec<(usize, u32, u32)>>, s: usize, e:usize, r
     best_path
 }
 
+
 fn expand_pulse(graph: &Vec<Vec<(usize, u32, u32)>>, 
             s: usize, 
             e: usize, 
@@ -83,38 +104,54 @@ fn expand_pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
             primal_bound: &mut u32, 
             minimum_cost: &Vec<u32>, 
             minimum_consumption: &Vec<u32>, 
-            labels: &mut Vec<Option<Pulse>>,
+            labels: &mut Vec<[Option<(u32,u32)>; 3]>,
             curr: &mut Pulse,
             best_path: &mut Option<Pulse>) {
     
     // uses backtracking with prunning strategies to find the best path
-    if !curr.is_dominated(&labels[curr.last_node]) && curr.check_bounds(*primal_bound, minimum_cost) && curr.check_feasibility(resource_limit, minimum_consumption) {
-        //println!("lables: {:?}", labels);
-        if curr.check_strong_dominance(&labels[curr.last_node]) {
-            labels[curr.last_node] = Some(curr.clone());
-        }
-        //println!("curr: {:?}", curr);
-        //println!("labels: {:?}", labels);
-        for (u, c, t) in &graph[curr.last_node] {
-            if curr.visited[*u] {
-                continue;
-            }
+    
 
-            curr.add_edge((*u, *c, *t));
-            
-            //if we get to the end, it updates the primal bound and the best path
-            if curr.last_node == e  && curr.cost < *primal_bound{
-                *primal_bound = curr.cost;
-                *best_path = Some(curr.clone());
-            } else {
-                //if we are not at the end, we call the function recursively
-                expand_pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
-            }
-            
-            curr.remove_edge((*u, *c, *t));
-            
-        }
+    //println!("lables: {:?}", labels);
+    if curr.replace_first(labels[curr.last_node][0]) {
+        labels[curr.last_node][0] = Some((curr.cost, curr.consumption))
     }
+
+    if curr.replace_second(labels[curr.last_node][1]) {
+        labels[curr.last_node][1] = Some((curr.cost, curr.consumption))
+    }
+
+    if curr.replace_third(labels[curr.last_node][2]) {
+        labels[curr.last_node][2] = Some((curr.cost, curr.consumption))
+    }
+    //println!("curr: {:?}", curr);
+    //println!("labels: {:?}", labels);
+    for &edge in &graph[curr.last_node] {
+        if curr.visited[edge.0] {
+            continue;
+        }
+
+        curr.add_edge(edge);
+
+        if curr.is_dominated(&labels[curr.last_node]) 
+        || !curr.check_bounds(*primal_bound, minimum_cost) 
+        || !curr.check_feasibility(resource_limit, minimum_consumption) {
+            curr.remove_edge(edge);
+            continue;
+        }
+            
+        //if we get to the end, it updates the primal bound and the best path
+        if curr.last_node == e  && curr.cost < *primal_bound{
+            *primal_bound = curr.cost;
+            *best_path = Some(curr.clone());
+        } else {
+            //if we are not at the end, we call the function recursively
+            expand_pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
+        }
+            
+        curr.remove_edge(edge);
+            
+    }
+    
 }
     
 

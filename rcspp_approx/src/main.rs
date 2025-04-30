@@ -79,6 +79,7 @@ fn main() -> io::Result<()> {
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
 
+
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match mult_obj_approach::mult_obj(&graph, s, e, resource_limit, 0.1) {
