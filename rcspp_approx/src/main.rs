@@ -1,7 +1,6 @@
 
 
 mod bidirectional_pulse;
-mod genetic_rcsp;
 mod pulse_algorithm;
 mod mult_obj_approach;
 mod disjoint_path_approach;
