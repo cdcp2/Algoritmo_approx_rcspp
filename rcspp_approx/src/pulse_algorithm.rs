@@ -70,7 +70,7 @@ impl Pulse {
 
     fn replace_third(&self, other: Option<(u32,u32)>) -> bool {
         match other {
-            Some((_cost, _consumption)) => rand::random_bool(0.8),
+            Some((_cost, _consumption)) => rand::random_bool(0.5),
             None => true
         }
     }
@@ -143,7 +143,7 @@ fn expand_pulse(graph: &Vec<Vec<(usize, u32, u32)>>,
         if curr.last_node == e  && curr.cost < *primal_bound{
             *primal_bound = curr.cost;
             *best_path = Some(curr.clone());
-        } else {
+        } else if curr.last_node != e {
             //if we are not at the end, we call the function recursively
             expand_pulse(graph, s, e, resource_limit, primal_bound, minimum_cost, minimum_consumption, labels, curr, best_path);
         }

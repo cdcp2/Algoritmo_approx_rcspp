@@ -5,12 +5,16 @@ mod genetic_rcsp;
 mod pulse_algorithm;
 mod mult_obj_approach;
 mod disjoint_path_approach;
+mod edge_blocking_algo;
+mod edge_penalization;
 
 use std::{
     env,
     fs::File,
     io::{self, BufRead}, time::Instant,
 };
+
+
 
 
 fn main() -> io::Result<()> {
@@ -67,6 +71,8 @@ fn main() -> io::Result<()> {
         );
         std::process::exit(1);
     }
+
+    println!("Corriendo Algoritmo del Pulso");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match pulse_algorithm::pulse_algorithm(&graph, s, e, resource_limit) {
@@ -79,7 +85,7 @@ fn main() -> io::Result<()> {
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
 
-
+    println!("Corriendo Algoritmo de buscar en la frontera de pareto");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match mult_obj_approach::mult_obj(&graph, s, e, resource_limit, 0.1) {
@@ -92,6 +98,7 @@ fn main() -> io::Result<()> {
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
 
+    println!("Corriendo Algoritmo de los caminos disyuntos");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match disjoint_path_approach::disjoint_algo(&graph, s, e, resource_limit){
@@ -103,6 +110,33 @@ fn main() -> io::Result<()> {
     }
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
+
+    println!("Corriendo edge block");
+    let start = Instant::now();
+    // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
+    match edge_blocking_algo::edge_block(&graph, s, e, resource_limit){
+        Some(best) => println!(
+            "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
+            best.0, best.1, best.2
+        ),
+        None => println!("No existe un camino factible con el límite de recursos dado."),
+    }
+    let duration = start.elapsed();
+    println!("Duration: {:?}",duration);
+
+    println!("Corriendo edge penalization");
+    let start = Instant::now();
+    // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
+    match edge_penalization::edge_penalization(&graph, s, e, resource_limit){
+        Some(best) => println!(
+            "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
+            best.0, best.1, best.2
+        ),
+        None => println!("No existe un camino factible con el límite de recursos dado."),
+    }
+    let duration = start.elapsed();
+    println!("Duration: {:?}",duration);
+
 
     Ok(())
 }
