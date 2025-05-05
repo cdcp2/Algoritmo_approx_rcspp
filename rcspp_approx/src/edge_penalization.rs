@@ -67,7 +67,7 @@ fn dijkstra(graph: &Vec<Vec<(usize,u32,u32,u32)>>, s:usize, e:usize)-> Option<(V
                 
                 parent[next_node] = Some(node);
                 
-                heap.push(Reverse((next_resource*pen, next_node, next_cost, next_resource)));
+                heap.push(Reverse(((next_resource.saturating_mul(pen)), next_node, next_cost, next_resource)));
             }
         }
     }

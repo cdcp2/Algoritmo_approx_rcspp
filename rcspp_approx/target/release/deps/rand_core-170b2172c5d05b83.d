@@ -1,0 +1,11 @@
+C:\Users\cdcp2\Desktop\Analisis_de_AlgoritmosRUST\Algoritmo_genetico_rcspp\rcspp_approx\target\release\deps\librand_core-170b2172c5d05b83.rmeta: C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src/lib.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\block.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\impls.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\le.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\os.rs
+
+C:\Users\cdcp2\Desktop\Analisis_de_AlgoritmosRUST\Algoritmo_genetico_rcspp\rcspp_approx\target\release\deps\librand_core-170b2172c5d05b83.rlib: C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src/lib.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\block.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\impls.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\le.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\os.rs
+
+C:\Users\cdcp2\Desktop\Analisis_de_AlgoritmosRUST\Algoritmo_genetico_rcspp\rcspp_approx\target\release\deps\rand_core-170b2172c5d05b83.d: C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src/lib.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\block.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\impls.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\le.rs C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\os.rs
+
+C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src/lib.rs:
+C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\block.rs:
+C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\impls.rs:
+C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\le.rs:
+C:\Users\cdcp2\.cargo\registry\src\index.crates.io-6f17d22bba15001f\rand_core-0.9.3\src\os.rs:
