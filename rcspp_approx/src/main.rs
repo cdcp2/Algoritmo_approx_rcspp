@@ -71,70 +71,81 @@ fn main() -> io::Result<()> {
         std::process::exit(1);
     }
 
+    let mut pulse_cost = f64::MAX;
+    let mut curr_cost=f64::MAX;
     println!("Corriendo Algoritmo del Pulso");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match pulse_algorithm::pulse_algorithm(&graph, s, e, resource_limit) {
-        Some(best) => println!(
+        Some(best) => {println!(
             "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
             best.path, best.cost, best.consumption
-        ),
+        ); pulse_cost = best.cost as f64;},
         None => println!("No existe un camino factible con el límite de recursos dado."),
     }
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
+    println!();
 
     println!("Corriendo Algoritmo de buscar en la frontera de pareto");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match mult_obj_approach::mult_obj(&graph, s, e, resource_limit, 0.1) {
-        Some(best) => println!(
+        Some(best) => {println!(
             "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
             best.0, best.1, best.2
-        ),
+        ); curr_cost = best.1 as f64;},
         None => println!("No existe un camino factible con el límite de recursos dado."),
     }
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
+    println!("Approximation: {}", curr_cost/pulse_cost);
+    println!();
 
     println!("Corriendo Algoritmo de los caminos disyuntos");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match disjoint_path_approach::disjoint_algo(&graph, s, e, resource_limit){
-        Some(best) => println!(
+        Some(best) => {println!(
             "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
             best.0, best.1, best.2
-        ),
+        ); curr_cost = best.1 as f64;},
         None => println!("No existe un camino factible con el límite de recursos dado."),
     }
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
+    println!("Approximation: {}", curr_cost/pulse_cost);
+    println!();
 
     println!("Corriendo edge block");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match edge_blocking_algo::edge_block(&graph, s, e, resource_limit){
-        Some(best) => println!(
+        Some(best) => {println!(
             "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
             best.0, best.1, best.2
-        ),
+        ); curr_cost = best.1 as f64;},
         None => println!("No existe un camino factible con el límite de recursos dado."),
     }
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
+    println!("Approximation: {}", curr_cost/pulse_cost);
+    println!();
 
     println!("Corriendo edge penalization");
     let start = Instant::now();
     // ── 4. Lanzar el algoritmo Pulse ──────────────────────────────────────
     match edge_penalization::edge_penalization(&graph, s, e, resource_limit){
-        Some(best) => println!(
+        Some(best) => {println!(
             "Mejor camino: {:?}\nCosto total: {}\nConsumo total: {}",
             best.0, best.1, best.2
-        ),
+        ); curr_cost = best.1 as f64;},
         None => println!("No existe un camino factible con el límite de recursos dado."),
     }
     let duration = start.elapsed();
     println!("Duration: {:?}",duration);
+    println!("Approximation: {}", curr_cost/pulse_cost);
+    println!();
 
 
     Ok(())
