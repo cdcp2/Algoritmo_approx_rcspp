@@ -1,0 +1,6 @@
+DataFile:USA-road-CAL.txt
+NumberOfArcs:4630444
+NumberOfNodes:1890816
+TimeConstraint:14090811
+StartNode:1
+EndNode:358624
