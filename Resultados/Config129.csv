@@ -1,0 +1,6 @@
+Algoritmo,Camino,Costo,Consumo,Duración,Approx,Config
+Algoritmo del Pulso (mÃ¡ximo 3 minutos),,,,,,Config129.txt
+Algoritmo de buscar en la frontera de pareto,,,,,1.0,Config129.txt
+Algoritmo de los caminos disyuntos,,,,,1.0,Config129.txt
+edge block,,,,,1.0,Config129.txt
+edge penalization,,,,,1.0,Config129.txt
