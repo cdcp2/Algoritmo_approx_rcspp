@@ -3,10 +3,10 @@ import re
 import subprocess
 import pandas as pd
 
-CONFIG_DIR = "/mnt/c/Users/snmca/gradle_projects/4208_ANALISIS_DE_ALGORITMOS/Algoritmo_approx_rcspp/instances"
-CARGO_PROJECT_DIR = "/mnt/c/Users/snmca/gradle_projects/4208_ANALISIS_DE_ALGORITMOS/Algoritmo_approx_rcspp/rcspp_approx"
-RESULTS_DIR = "/mnt/c/Users/snmca/gradle_projects/4208_ANALISIS_DE_ALGORITMOS/Algoritmo_approx_rcspp/rcspp_approx/resultados"
-DEBUG_DIR = "/mnt/c/Users/snmca/gradle_projects/4208_ANALISIS_DE_ALGORITMOS/Algoritmo_approx_rcspp/rcspp_approx/debug_output"
+CONFIG_DIR = "C:/Users/c.casadiego/Documents/Algoritmo_approx_rcspp/rcspp_approx/Instancias"
+CARGO_PROJECT_DIR = "C:/Users/c.casadiego/Documents/Algoritmo_approx_rcspp/rcspp_approx"
+RESULTS_DIR = "C:/Users/c.casadiego/Documents/Algoritmo_approx_rcspp/rcspp_approx/resultados"
+DEBUG_DIR = "C:/Users/c.casadiego/Documents/Algoritmo_approx_rcspp/rcspp_approx/debug_output"
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 os.makedirs(DEBUG_DIR, exist_ok=True)
